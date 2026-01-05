@@ -105,7 +105,11 @@
 			<version>5.10.1</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>com.akhil</groupId>
+			<artifactId>common-shared-events</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

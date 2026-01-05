@@ -1,14 +1,14 @@
 package com.akhil.inventory_service.event;
 
 import com.akhil.inventory_service.Service.InventoryService;
-import com.akhil.inventory_service.event.InventoryRejectedEvent;
-import com.akhil.inventory_service.event.InventoryReservedEvent;
-import com.akhil.inventory_service.event.OrderCreatedEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.akhil.common.events.OrderCreatedEvent;
+import org.akhil.common.events.OrderItemEvent;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 
+@Slf4j
 @Component
 public class OrderCreatedConsumer {
 
@@ -25,37 +25,41 @@ public class OrderCreatedConsumer {
 
     @KafkaListener(
             topics = "order.created",
-            groupId = "inventory-service-group"
+            groupId = "inventory-service-group-v2",
+            containerFactory = "kafkaListenerContainerFactory"
     )
     public void handle(OrderCreatedEvent event) {
+        log.error("=================Handling Order Creation.==================");
+        for (OrderItemEvent item : event.getItems()) {
 
-        try {
-            inventoryService.reserveInventory(
-                    event.getOrderId(),
-                    event.getProductId(),
-                    event.getQuantity()
-            );
+            try {
+                inventoryService.reserveInventory(
+                        event.getOrderId(),
+                        item.getProductId(),
+                        item.getQuantity()
+                );
 
-            // ✅ SUCCESS → publish inventory.reserved
-            eventPublisher.publishReserved(
-                    new InventoryReservedEvent(
-                            event.getOrderId(),
-                            event.getProductId(),
-                            event.getQuantity(),
-                            event.getCreatedAt()
-                    )
-            );
+                eventPublisher.publishReserved(
+                        new InventoryReservedEvent(
+                                event.getOrderId(),
+                                item.getProductId(),
+                                item.getQuantity(),
+                                event.getCreatedAt()
+                        )
+                );
 
-        } catch (Exception ex) {
+            } catch (Exception ex) {
 
-            // ❌ FAILURE → publish inventory.rejected
-            eventPublisher.publishRejected(
-                    new InventoryRejectedEvent(
-                            event.getOrderId(),
-                            ex.getMessage(),
-                            event.getCreatedAt()
-                    )
-            );
+                eventPublisher.publishRejected(
+                        new InventoryRejectedEvent(
+                                event.getOrderId(),
+                                ex.getMessage(),
+                                event.getCreatedAt(),
+                                item.getProductId()
+                        )
+                );
+            }
         }
     }
+
 }
