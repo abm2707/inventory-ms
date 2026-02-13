@@ -18,8 +18,8 @@ public class InventoryQueryController {
         this.queryService = queryService;
     }
 
-    @GetMapping("/{productId}/availability")
-    public ResponseEntity<InventoryAvailabilityResponse> checkAvailability(
+    //@GetMapping("/{productId}/availability")
+    /*public ResponseEntity<InventoryAvailabilityResponse> checkAvailability(
             @PathVariable UUID productId,
             @RequestParam int quantity) throws InsufficientInventoryException {
 
@@ -27,6 +27,6 @@ public class InventoryQueryController {
                 queryService.checkAvailability(productId, quantity);
 
         return ResponseEntity.ok(response);
-    }
+    } */
 }
 

@@ -24,7 +24,7 @@ public class InventoryQueryService {
         this.reservationRepository = reservationRepository;
     }
 
-    public InventoryAvailabilityResponse checkAvailability(UUID productId, int quantity) throws InsufficientInventoryException {
+    /*public InventoryAvailabilityResponse checkAvailability(UUID productId, int quantity) throws InsufficientInventoryException {
 
         InventoryItem item = itemRepository.findById(productId)
                 .orElseThrow(() ->
@@ -40,6 +40,6 @@ public class InventoryQueryService {
         }
 
         return new InventoryAvailabilityResponse(true);
-    }
+    } */
 }
 

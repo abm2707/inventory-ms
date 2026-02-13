@@ -1,5 +1,7 @@
 package com.akhil.inventory_service.event;
 
+import org.akhil.common.events.StockRejectedEvent;
+import org.akhil.common.events.StockReservedEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +17,7 @@ public class InventoryEventPublisher {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void publishReserved(InventoryReservedEvent event) {
+    public void publishReserved(StockReservedEvent event) {
         kafkaTemplate.send(
                 INVENTORY_RESERVED_TOPIC,
                 event.getOrderId().toString(),
@@ -23,7 +25,7 @@ public class InventoryEventPublisher {
         );
     }
 
-    public void publishRejected(InventoryRejectedEvent event) {
+    public void publishRejected(StockRejectedEvent event) {
         kafkaTemplate.send(
                 INVENTORY_REJECTED_TOPIC,
                 event.getOrderId().toString(),

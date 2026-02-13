@@ -20,6 +20,9 @@ public class InventoryItem {
     @Column(name = "total_quantity", nullable = false)
     private int totalQuantity;
 
+    @Column(name = "available_quantity", nullable = false)
+    private int availableQuantity;
+
     @Version
     private long version;
 
@@ -30,47 +33,40 @@ public class InventoryItem {
     private Instant updatedAt;
 
     public InventoryItem(UUID productId, int totalQuantity) {
+        if (totalQuantity < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative");
+        }
         this.productId = productId;
         this.totalQuantity = totalQuantity;
+        this.availableQuantity = totalQuantity;
         this.createdAt = Instant.now();
     }
 
-    public void updateQuantity(int newQuantity) {
-        if (newQuantity < 0) {
-            throw new IllegalArgumentException("Quantity cannot be negative");
-        }
-        this.totalQuantity = newQuantity;
-        this.updatedAt = Instant.now();
+    /* ===== Domain behavior ===== */
+
+    public boolean canReserve(int quantity) {
+        return quantity > 0 && availableQuantity >= quantity;
     }
 
-    public void increase(int quantity) {
+    public void reserve(int quantity) {
         if (quantity <= 0) {
-            throw new IllegalArgumentException("Increase quantity must be positive");
+            throw new IllegalArgumentException("Reserve quantity must be positive");
         }
-        this.totalQuantity += quantity;
-        this.updatedAt = Instant.now();
-        validateState();
-    }
-
-    public void decrease(int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Decrease quantity must be positive");
-        }
-        if (this.totalQuantity < quantity) {
+        if (availableQuantity < quantity) {
             throw new IllegalStateException("Insufficient inventory");
         }
-        this.totalQuantity -= quantity;
+        this.availableQuantity -= quantity;
         this.updatedAt = Instant.now();
-        validateState();
     }
 
-    public boolean canFulfill(int requestedQuantity) {
-        return requestedQuantity > 0 && this.totalQuantity >= requestedQuantity;
-    }
-
-    private void validateState() {
-        if (this.totalQuantity < 0) {
-            throw new IllegalStateException("Inventory quantity cannot be negative");
+    public void release(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Release quantity must be positive");
         }
+        this.availableQuantity += quantity;
+        if (this.availableQuantity > this.totalQuantity) {
+            this.availableQuantity = this.totalQuantity;
+        }
+        this.updatedAt = Instant.now();
     }
 }
